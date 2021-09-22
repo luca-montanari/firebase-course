@@ -1,11 +1,7 @@
-import {Component, OnInit} from '@angular/core';
-
-
+import { Component, OnInit } from '@angular/core';
+import { AngularFirestore } from '@angular/fire/firestore';
+import { COURSES, findLessonsForCourse } from './db-data';
 import 'firebase/firestore';
-
-import {AngularFirestore} from '@angular/fire/firestore';
-import {COURSES, findLessonsForCourse} from './db-data';
-
 
 @Component({
     selector: 'about',
@@ -35,11 +31,54 @@ export class AboutComponent {
     }
 
     removeId(data: any) {
-        const newData: any = {...data};
+        const newData: any = { ...data };
         delete newData.id;
         return newData;
     }
 
+    onReadDoc() {
+        // this.db.doc('/courses/56VPOibBBEN3sOri4h7J')
+        //     .snapshotChanges()
+        //     .subscribe(snap => {
+        //         console.log(snap.payload.id);
+        //         console.log(snap.payload.data());
+        //     });
+        this.db.doc('/courses/56VPOibBBEN3sOri4h7J')
+            .valueChanges()
+            .subscribe(course => {
+                console.log(course);
+            });
+    }
+
+    onReadCollection() {
+        this.db
+            .collection(
+                'courses',
+                ref => ref
+                    .where('seqNo', '<=', 5)
+                    .where('url', '==', 'angular-forms-course')
+                    .orderBy('seqNo')
+            )
+            .get()
+            .subscribe(snaps => {
+                snaps.forEach(snap => {
+                    console.log(snap.id);
+                    console.log(snap.data());
+                })
+            });
+    }
+
+    onReadCollectionGroup() {
+        this.db
+            .collectionGroup('lessons', ref => ref.where('seqNo', '==', 1))
+            .get()
+            .subscribe(snaps => {
+                snaps.forEach(snap => {
+                    console.log(snap.id);
+                    console.log(snap.data());
+                })
+            });
+    }
 
 }
 
