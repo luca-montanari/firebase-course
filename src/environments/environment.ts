@@ -15,7 +15,7 @@ export const environment = {
         appId: "1:170975902846:web:6fd0e280a2a36086beec2f"
     },
     api: {
-
+        createUser: 'http://localhost:5001/provo001-470d9/us-central1/createUser'
     }
 };
 

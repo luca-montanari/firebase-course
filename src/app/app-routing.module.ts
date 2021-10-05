@@ -32,7 +32,7 @@ const routes: Routes = [
     {
         path: 'create-user',
         component: CreateUserComponent,
-        canActivate: [AngularFireAuthGuard],
+        //canActivate: [AngularFireAuthGuard],
         data: {
             authGuardPipe: adminOnly
         }

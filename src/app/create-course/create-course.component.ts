@@ -18,6 +18,8 @@ import { CoursesService } from '../services/courses.service';
 export class CreateCourseComponent implements OnInit {
 
     courseId: string;
+    percentageChanges$: Observable<number>;
+    iconUrl: string;
 
     form = this.fb.group({
         description: ['', Validators.required],
@@ -31,7 +33,8 @@ export class CreateCourseComponent implements OnInit {
     constructor(private fb: FormBuilder,
                 private coursesService: CoursesService,
                 private afs: AngularFirestore,
-                private router: Router) {
+                private router: Router,
+                private storage: AngularFireStorage) {
     }
 
     ngOnInit() {
@@ -39,7 +42,6 @@ export class CreateCourseComponent implements OnInit {
     }
 
     onCreateCourse() {
-        
         const val = this.form.value;
         const newCourse: Partial<Course> = {
             description: val.description,
@@ -48,7 +50,6 @@ export class CreateCourseComponent implements OnInit {
             promo: val.promo,
             categories: [val.category]
         };
-
         newCourse.promoStartAt = Timestamp.fromDate(this.form.value.promoStartAt);
         console.log(newCourse);
         this.coursesService.createCourse(newCourse, this.courseId)
@@ -60,6 +61,28 @@ export class CreateCourseComponent implements OnInit {
                 catchError(err => {
                     console.log(err);
                     alert('Could not create the course.');
+                    return throwError(err);
+                })
+            )
+            .subscribe();
+    }
+
+    uploadThumbnail(event) {
+        const file: File = event.target.files[0];
+        console.log(file.name);
+        const filePath = `courses/${this.courseId}/${file.name}`;
+        const task = this.storage.upload(filePath, file, {
+            cacheControl: 'max-age=2592000,public'
+        });
+        this.percentageChanges$ = task.percentageChanges();
+        task.snapshotChanges()
+            .pipe(
+                last(),
+                concatMap(() => this.storage.ref(filePath).getDownloadURL()),
+                tap(url => this.iconUrl = url),
+                catchError(err => {
+                    console.log(err);
+                    alert('Could not create thumbnail url.');
                     return throwError(err);
                 })
             )
